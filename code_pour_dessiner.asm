@@ -41,8 +41,8 @@ depth:         	resd	1
 connection:    	resd	1
 width:         	resd	1
 height:        	resd	1
-window:		resq	1
-gc:		resq	1
+window:		    resq	1
+gc:		        resq	1
 
 section .data
 
@@ -208,12 +208,29 @@ mov rdi,qword[display_name]
 mov rsi,qword[gc]
 mov edx,0xFFAA00	; Couleur du crayon ; orange
 call XSetForeground
-; coordonnées de la ligne 1 (noire)
-mov dword[x1],300
-mov dword[y1],50
-mov dword[x2],50
-mov dword[y2],350
-; dessin de la ligne 1
+; coordonnées de la ligne 2 (orange)
+mov dword[x2],350
+mov dword[y2],150
+; dessin de la ligne 2
+mov rdi,qword[display_name]
+mov rsi,qword[window]
+mov rdx,qword[gc]
+mov ecx,dword[x1]	; coordonnée source en x
+mov r8d,dword[y1]	; coordonnée source en y
+mov r9d,dword[x2]	; coordonnée destination en x
+push qword[y2]		; coordonnée destination en y
+call XDrawLine
+
+
+;couleur de la ligne 3
+mov rdi,qword[display_name]
+mov rsi,qword[gc]
+mov edx,0xFF0000	; Couleur du crayon ; rouge
+call XSetForeground
+; coordonnées de la ligne 3 (rouge)
+mov dword[x1],200
+mov dword[y1],350
+; dessin de la ligne 2
 mov rdi,qword[display_name]
 mov rsi,qword[window]
 mov rdx,qword[gc]
