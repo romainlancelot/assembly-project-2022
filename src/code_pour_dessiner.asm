@@ -45,18 +45,10 @@ height:        	resd	1
 window:		    resq	1
 gc:		        resq	1
 
-x12:            resw    1
-x23:            resw    1
-y12:            resw    1
-y23:            resw    1
-xa:             resw    1
-xb:             resw    1
-
 section .data
 
 event:		times	24 dq 0
 
-tm: db "// %d //",10,0
 x1:	dd	0
 x2:	dd	0
 x3:	dd	0
@@ -64,8 +56,7 @@ y1:	dd	0
 y2:	dd	0
 y3:	dd	0
 determinant:	dd	0
-all_coord: db "x1 : %d | y1 : %d | x2 : %d | y2 :%d | x3 : %d | y3 : %d",0,10
-one_coord: db "[ %d ]",0,10
+print_d: db "[ %d ]",0,10
 sur: db "surSegment : %d",0,10
 gau: db "gauche : %d",0,10
 dro: db "droite : %d",0,10
@@ -125,36 +116,31 @@ mov rdx,0x000000	; Couleur du crayon
 call XSetForeground
 
 ; coordonnées des points du triangle
-; call coordonnees
-; mov word[x1],dx
-; call coordonnees
-; mov word[y1],dx
-; call coordonnees
-; mov word[x2],dx
-; call coordonnees
-; mov word[y2],dx
-; call coordonnees
-; mov word[x3],dx
-; call coordonnees
-; mov word[y3],dx
-
-mov dx,14
+call coordonnees
 mov word[x1],dx
-
-mov dx,20
+call coordonnees
 mov word[y1],dx
-
-mov dx,25
+call coordonnees
 mov word[x2],dx
-
-mov dx,69
+call coordonnees
 mov word[y2],dx
-
-mov dx,10
+call coordonnees
 mov word[x3],dx
-
-mov dx,60
+call coordonnees
 mov word[y3],dx
+
+; mov dx,14
+; mov word[x1],dx
+; mov dx,20
+; mov word[y1],dx
+; mov dx,25
+; mov word[x2],dx
+; mov dx,69
+; mov word[y2],dx
+; mov dx,10
+; mov word[x3],dx
+; mov dx,60
+; mov word[y3],dx
 
 mov rdi,one_coord
 mov rsi,[x1]
@@ -343,13 +329,7 @@ calculDeterminant:
     imul rdi, rax       ; rdi = (x3 - x2) * (y1 - y2)
 
     sub rbx, rdi        ; rbx = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
-
-    ; afficher le résultat
-    mov rdi,tm
-    mov rsi,rbx
-    mov rax,0
-    ; xor eax,eax         ; mettre 0 dans rax pour terminer la chaîne de format
-    call printf
+    mov rax, rbx
 
     pop rbx
     pop rbp
