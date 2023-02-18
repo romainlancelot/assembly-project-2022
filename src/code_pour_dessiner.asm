@@ -22,16 +22,17 @@ extern exit
 %define	StructureNotifyMask	131072
 %define KeyPressMask		1
 %define ButtonPressMask		4
-%define MapNotify		19
-%define KeyPress		2
-%define ButtonPress		4
-%define Expose			12
+%define MapNotify		    19
+%define KeyPress		    2
+%define ButtonPress		    4
+%define Expose			    12
 %define ConfigureNotify		22
-%define CreateNotify 16
-%define QWORD	8
-%define DWORD	4
-%define WORD	2
-%define BYTE	1
+%define CreateNotify        16
+%define QWORD	            8
+%define DWORD	            4
+%define WORD	            2
+%define BYTE	            1
+%define NB_TRIANGLE         1
 
 global main
 
@@ -55,11 +56,10 @@ x3:	dd	0
 y1:	dd	0
 y2:	dd	0
 y3:	dd	0
-determinant:	dd	0
-print_d: db "[ %d ]",0,10
-sur: db "surSegment : %d",0,10
-gau: db "gauche : %d",0,10
-dro: db "droite : %d",0,10
+determinant:    dd	0
+print_d:        db "[ %d ]",0,10
+pos:            db "Determinant = %d, triangle indirect !",10,0
+neg:            db "Determinant = %d, triangle direct !",10,0
 
 section .text
 	
@@ -142,22 +142,22 @@ mov word[y3],dx
 ; mov dx,60
 ; mov word[y3],dx
 
-mov rdi,one_coord
+mov rdi,print_d
 mov rsi,[x1]
 call printf
-mov rdi,one_coord
+mov rdi,print_d
 mov rsi,[y1]
 call printf
-mov rdi,one_coord
+mov rdi,print_d
 mov rsi,[x2]
 call printf
-mov rdi,one_coord
+mov rdi,print_d
 mov rsi,[y2]
 call printf
-mov rdi,one_coord
+mov rdi,print_d
 mov rsi,[x3]
 call printf
-mov rdi,one_coord
+mov rdi,print_d
 mov rsi,[y3]
 call printf
 
@@ -170,36 +170,33 @@ mov r8,[x3]     ; x3
 mov r9,[y3]     ; y3
 call calculDeterminant
 
-; cmp word[rax],0
-; jg gauche       ; si D est positif, le point est à gauche du segment
-; jl droite       ; si D est négatif, le point est à droite du segment
-; je surSegment   ; si D est nul, le point est sur le segment
-
-; gauche:
-;     mov rdi,gau
-;     mov rsi,rax
-;     mov rax,0
-;     call printf
-
-; droite:
-;     mov rdi,dro
-;     mov rsi,rax
-;     mov rax,0
-;     call printf
-
-; surSegment:
-;     mov rdi,sur
-;     mov rsi,rax
-;     mov rax,0
-;     call printf
-
 mov [determinant],rax
 
-mov rdi,one_coord
-mov rsi,[determinant]
-; mov rsi,rax
-mov rax,0
-call printf
+cmp word[determinant],0
+jl negatif
+
+cmp word[determinant],1
+jge positif
+
+positif:
+    mov rdi,pos
+    movsx rsi,word[determinant]
+    mov rax,0
+    call printf
+    jmp fin
+
+negatif:
+    mov rdi,neg
+    movsx rsi,word[determinant]
+    mov rax,0
+    call printf
+    jmp fin
+
+fin:
+    pop rbp
+    mov rax,60
+    mov rdi,0
+    syscall
 
 boucle: ; boucle de gestion des évènements
 mov rdi,qword[display_name]
@@ -329,7 +326,13 @@ calculDeterminant:
     imul rdi, rax       ; rdi = (x3 - x2) * (y1 - y2)
 
     sub rbx, rdi        ; rbx = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
+
     mov rax, rbx
+
+    ; mov rdi,print_d
+    ; mov rsi,rax
+    ; mov rax,0
+    ; call printf
 
     pop rbx
     pop rbp
