@@ -13,6 +13,7 @@ extern XDrawLine
 extern XDrawPoint
 extern XFillArc
 extern XNextEvent
+extern XFillPolygon
 
 ; external functions from stdio library (ld-linux-x86-64.so.2)    
 extern printf
@@ -44,14 +45,30 @@ height:        	resd	1
 window:		    resq	1
 gc:		        resq	1
 
+x12:            resw    1
+x23:            resw    1
+y12:            resw    1
+y23:            resw    1
+xa:             resw    1
+xb:             resw    1
+
 section .data
 
 event:		times	24 dq 0
 
+tm: db "// %d //",10,0
 x1:	dd	0
 x2:	dd	0
+x3:	dd	0
 y1:	dd	0
 y2:	dd	0
+y3:	dd	0
+determinant:	dd	0
+all_coord: db "x1 : %d | y1 : %d | x2 : %d | y2 :%d | x3 : %d | y3 : %d",0,10
+one_coord: db "[ %d ]",0,10
+sur: db "surSegment : %d",0,10
+gau: db "gauche : %d",0,10
+dro: db "droite : %d",0,10
 
 section .text
 	
@@ -107,6 +124,97 @@ mov rsi,qword[gc]
 mov rdx,0x000000	; Couleur du crayon
 call XSetForeground
 
+; coordonnées des points du triangle
+; call coordonnees
+; mov word[x1],dx
+; call coordonnees
+; mov word[y1],dx
+; call coordonnees
+; mov word[x2],dx
+; call coordonnees
+; mov word[y2],dx
+; call coordonnees
+; mov word[x3],dx
+; call coordonnees
+; mov word[y3],dx
+
+mov dx,14
+mov word[x1],dx
+
+mov dx,20
+mov word[y1],dx
+
+mov dx,25
+mov word[x2],dx
+
+mov dx,69
+mov word[y2],dx
+
+mov dx,10
+mov word[x3],dx
+
+mov dx,60
+mov word[y3],dx
+
+mov rdi,one_coord
+mov rsi,[x1]
+call printf
+mov rdi,one_coord
+mov rsi,[y1]
+call printf
+mov rdi,one_coord
+mov rsi,[x2]
+call printf
+mov rdi,one_coord
+mov rsi,[y2]
+call printf
+mov rdi,one_coord
+mov rsi,[x3]
+call printf
+mov rdi,one_coord
+mov rsi,[y3]
+call printf
+
+; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
+mov rdi,[x1]    ; x1
+mov rsi,[y1]    ; y1
+mov rdx,[x2]    ; x2
+mov rcx,[y2]    ; y2
+mov r8,[x3]     ; x3
+mov r9,[y3]     ; y3
+call calculDeterminant
+
+; cmp word[rax],0
+; jg gauche       ; si D est positif, le point est à gauche du segment
+; jl droite       ; si D est négatif, le point est à droite du segment
+; je surSegment   ; si D est nul, le point est sur le segment
+
+; gauche:
+;     mov rdi,gau
+;     mov rsi,rax
+;     mov rax,0
+;     call printf
+
+; droite:
+;     mov rdi,dro
+;     mov rsi,rax
+;     mov rax,0
+;     call printf
+
+; surSegment:
+;     mov rdi,sur
+;     mov rsi,rax
+;     mov rax,0
+;     call printf
+
+mov [determinant],rax
+
+mov rdi,one_coord
+mov rsi,[determinant]
+; mov rsi,rax
+mov rax,0
+call printf
+
 boucle: ; boucle de gestion des évènements
 mov rdi,qword[display_name]
 mov rsi,event
@@ -120,107 +228,18 @@ je closeDisplay						; on saute au label 'closeDisplay' qui ferme la fenêtre
 jmp boucle
 
 ;#########################################
-;#		 COORDONNEES ALEATOIRES  		 #
-;#########################################
-; fonction qui va tirer des coordonnées aléatoires avec rdrand
-coordonnees:
-; on va tirer 4 coordonnées aléatoires
-; on va les stocker dans les variables x1, x2, y1, y2
-; on va les afficher dans la console
-rdrand rax
-mov dword[x1],eax
-; afficher x1
-mov rdi,1
-mov rdx,x1
-call printf
-
-
-; mov rdi,0
-; call rdrand
-; mov dword[x2],eax
-; mov rdi,0
-; call rdrand
-; mov dword[y1],eax
-; mov rdi,0
-; call rdrand
-; mov dword[y2],eax
-
-
-;#########################################
 ;#		DEBUT DE LA ZONE DE DESSIN		 #
 ;#########################################
 dessin:
-; sauter à la fonction coordonnées
-call coordonnees
 ; couleurs sous forme RRGGBB où RR esr le niveau de rouge, GG le niveua de vert et BB le niveau de bleu
 ; 0000000 (noir) à FFFFFF (blanc)
 
-;couleur du point 1
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0xFF0000	; Couleur du crayon ; rouge
-call XSetForeground
-
-; Dessin d'un point rouge : coordonnées (100,200)
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,100	; coordonnée source en x
-mov r8d,200	; coordonnée source en y
-call XDrawPoint
-
-;couleur du point 2
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0x00FF00	; Couleur du crayon ; vert
-call XSetForeground
-
-; Dessin d'un point vert: coordonnées (100,250)
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,100	; coordonnée source en x
-mov r8d,250	; coordonnée source en y
-call XDrawPoint
-
-;couleur du point 3
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0x0000FF	; Couleur du crayon ; bleu
-call XSetForeground
-
-; Dessin d'un point bleu : coordonnées (200,200)
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,200	; coordonnée source en x
-mov r8d,200	; coordonnée source en y
-call XDrawPoint
-
-;couleur du point 4
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0xFF00FF	; Couleur du crayon ; violet
-call XSetForeground
-
-; Dessin d'un point violet : coordonnées (200,250)
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,200	; coordonnée source en x
-mov r8d,250	; coordonnée source en y
-call XDrawPoint
-
-;couleur de la ligne 1
+;couleur du triangle
 mov rdi,qword[display_name]
 mov rsi,qword[gc]
 mov edx,0x000000	; Couleur du crayon ; noir
 call XSetForeground
-; coordonnées de la ligne 1 (noire)
-mov dword[x1],50
-mov dword[y1],50
-mov dword[x2],200
-mov dword[y2],350
+
 ; dessin de la ligne 1
 mov rdi,qword[display_name]
 mov rsi,qword[window]
@@ -231,47 +250,31 @@ mov r9d,dword[x2]	; coordonnée destination en x
 push qword[y2]		; coordonnée destination en y
 call XDrawLine
 
-;couleur de la ligne 2
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0xFFAA00	; Couleur du crayon ; orange
-call XSetForeground
-; coordonnées de la ligne 2 (orange)
-mov dword[x2],350
-mov dword[y2],150
 ; dessin de la ligne 2
-mov rdi,qword[display_name]
+; mov rdi,qword[display_name]
 mov rsi,qword[window]
 mov rdx,qword[gc]
 mov ecx,dword[x1]	; coordonnée source en x
 mov r8d,dword[y1]	; coordonnée source en y
-mov r9d,dword[x2]	; coordonnée destination en x
-push qword[y2]		; coordonnée destination en y
+mov r9d,dword[x3]	; coordonnée destination en x
+push qword[y3]		; coordonnée destination en y
 call XDrawLine
 
-
-;couleur de la ligne 3
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0xFF0000	; Couleur du crayon ; rouge
-call XSetForeground
-; coordonnées de la ligne 3 (rouge)
-mov dword[x1],200
-mov dword[y1],350
 ; dessin de la ligne 2
 mov rdi,qword[display_name]
 mov rsi,qword[window]
 mov rdx,qword[gc]
-mov ecx,dword[x1]	; coordonnée source en x
-mov r8d,dword[y1]	; coordonnée source en y
+mov ecx,dword[x3]	; coordonnée source en x
+mov r8d,dword[y3]	; coordonnée source en y
 mov r9d,dword[x2]	; coordonnée destination en x
 push qword[y2]		; coordonnée destination en y
 call XDrawLine
+
 
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
-; ############################
+; ############################m
 jmp flush
 
 flush:
@@ -287,4 +290,67 @@ closeDisplay:
     call    XCloseDisplay
     xor	    rdi,rdi
     call    exit
-	
+
+
+global coordonnees
+coordonnees:
+    ; tirer un nombre au hasard rdrand
+    mov ax,0
+    rdrand ax
+
+    ; utiliser modulo pour le ramener entre 0 et 400
+    mov bx, 400
+    xor dx, dx ; initialiser DX à 0
+    div bx
+    ; le résultat se trouve dans dx
+
+    ret
+
+global calculDeterminant
+calculDeterminant:
+    push rbp
+    mov rbp,rsp
+    push rbx
+
+    ; prendre des arguments
+    mov rax,0
+    add rax,rdi         ; x1 (ax)
+    add rax,rsi         ; y1 (ay)
+    add rax,rdx         ; x2 (bx)
+    add rax,rcx         ; y2 (by)
+    add rax,r8          ; x3 (cx)
+    add rax,r9          ; y3 (cy)
+
+    ; calcul du déterminant de trois points A(x1,y1), B(x2,y2) et C(x3,y3)
+    ; bax = ax - bx;
+    ; bay = ay - by;
+    ; bcx = cx - bx;
+    ; bcy = cy - by;
+    ; determinant = (bax * bcy) - (bcx * bay);
+    ; determinant = (ax - bx) * (cy - by) - (cx - bx) * (ay - by)
+    ; determinant = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
+
+    mov rbx, rdi        ; rbx = x1
+    sub rbx, rdx        ; rbx = x1 - x2
+    mov rdi, r9         ; rdi = y3
+    sub rdi, rcx        ; rdi = y3 - y2
+    imul rbx, rdi       ; rbx = (x1 - x2) * (y3 - y2)
+
+    mov rdi, r8         ; rdi = x3
+    sub rdi, rdx        ; rdi = x3 - x2
+    mov rax, rsi        ; rax = y1
+    sub rax, rcx        ; rax = y1 - y2
+    imul rdi, rax       ; rdi = (x3 - x2) * (y1 - y2)
+
+    sub rbx, rdi        ; rbx = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
+
+    ; afficher le résultat
+    mov rdi,tm
+    mov rsi,rbx
+    mov rax,0
+    ; xor eax,eax         ; mettre 0 dans rax pour terminer la chaîne de format
+    call printf
+
+    pop rbx
+    pop rbp
+    ret
