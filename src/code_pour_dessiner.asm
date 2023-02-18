@@ -120,10 +120,38 @@ je closeDisplay						; on saute au label 'closeDisplay' qui ferme la fenêtre
 jmp boucle
 
 ;#########################################
+;#		 COORDONNEES ALEATOIRES  		 #
+;#########################################
+; fonction qui va tirer des coordonnées aléatoires avec rdrand
+coordonnees:
+; on va tirer 4 coordonnées aléatoires
+; on va les stocker dans les variables x1, x2, y1, y2
+; on va les afficher dans la console
+rdrand rax
+mov dword[x1],eax
+; afficher x1
+mov rdi,1
+mov rdx,x1
+call printf
+
+
+; mov rdi,0
+; call rdrand
+; mov dword[x2],eax
+; mov rdi,0
+; call rdrand
+; mov dword[y1],eax
+; mov rdi,0
+; call rdrand
+; mov dword[y2],eax
+
+
+;#########################################
 ;#		DEBUT DE LA ZONE DE DESSIN		 #
 ;#########################################
 dessin:
-
+; sauter à la fonction coordonnées
+call coordonnees
 ; couleurs sous forme RRGGBB où RR esr le niveau de rouge, GG le niveua de vert et BB le niveau de bleu
 ; 0000000 (noir) à FFFFFF (blanc)
 
