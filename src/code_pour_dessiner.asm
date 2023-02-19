@@ -33,7 +33,7 @@ extern exit
 %define DWORD	            4
 %define WORD	            2
 %define BYTE	            1
-%define NB_TRIANGLE         1
+%define NB_TRIANGLE         2
 
 global main
 
@@ -52,28 +52,28 @@ section .data
 
 event:		times	24 dq 0
 
-coord_x:    dd  0
-coord_y:    dd  0
-result1:    dw  0
-result2:    dw  0
-result3:    dw  0
-pointx: db "x = %d",10,0
-pointy: db "y = %d",10,0
-
-i:  dd  0
-genok:  dd  0
-x1:	dd	0
-x2:	dd	0
-x3:	dd	0
-y1:	dd	0
-y2:	dd	0
-y3:	dd	0
+x1:	            dw	0
+x2:	            dw	0
+x3:	            dw	0
+y1:	            dw	0
+y2:	            dw	0
+y3:     	    dw	0
+i:              dd  0
+genok:          dd  0
 determinant:    dd	0
 isDirect:       dd	0
+coord_x:        dw  0
+coord_y:        dw  0
+result1:        dw  0
+result2:        dw  0
+result3:        dw  0
+
 print_d:        db "[ %d ]",0,10
 print_i:        db "i : [ %d ] /",0,10
-inTriangle: db "Point dans le triangle !",10,0
-notInTriangle: db "Point pas dans le triangle #sad",10,0
+; inTriangle:     db "Point dans le triangle !",10,0
+; notInTriangle:  db "Point pas dans le triangle #sad",10,0
+; pointx: db "x = %d",10,0
+; pointy: db "y = %d",10,0
 
 section .text
 	
@@ -138,10 +138,19 @@ mov dword[color],edx
 mov bl, NB_TRIANGLE
 mov byte[i],bl
 
+jmp genTriangle
+
 boucle: ; boucle de gestion des évènements
     mov rdi,qword[display_name]
     mov rsi,event
     call XNextEvent
+
+    ; mov rdi,print_i
+    ; mov rsi,[i]
+    ; mov rax,0
+    ; call printf
+    cmp byte[i],0
+    je skip
     
     cmp byte[genok],0
     je genTriangle
@@ -150,6 +159,7 @@ boucle: ; boucle de gestion des évènements
     cmp dword[event],ConfigureNotify	; à l'apparition de la fenêtre
     je dessin 						    ; on saute au label 'dessin'
     
+    skip:
     cmp dword[event],KeyPress			; Si on appuie sur une touche
     je closeDisplay						; on saute au label 'closeDisplay' qui ferme la fenêtre
     jmp boucle
@@ -157,18 +167,19 @@ boucle: ; boucle de gestion des évènements
 
 genTriangle:
     ; coordonnées des points du triangle
-    ; call coordonnees
-    ; mov word[x1],dx
-    ; call coordonnees
-    ; mov word[y1],dx
-    ; call coordonnees
-    ; mov word[x2],dx
-    ; call coordonnees
-    ; mov word[y2],dx
-    ; call coordonnees
-    ; mov word[x3],dx
-    ; call coordonnees
-    ; mov word[y3],dx
+    mov dx,0
+    call coordonnees
+    mov word[x1],dx
+    call coordonnees
+    mov word[y1],dx
+    call coordonnees
+    mov word[x2],dx
+    call coordonnees
+    mov word[y2],dx
+    call coordonnees
+    mov word[x3],dx
+    call coordonnees
+    mov word[y3],dx
 
     ; mov dx,14
     ; mov word[x1],dx
@@ -183,48 +194,48 @@ genTriangle:
     ; mov dx,60
     ; mov word[y3],dx
 
-    mov dx,14
-    mov word[x1],dx
-    mov dx,20
-    mov word[y1],dx
-    mov dx,10
-    mov word[x2],dx
-    mov dx,60
-    mov word[y2],dx
-    mov dx,25
-    mov word[x3],dx
-    mov dx,69
-    mov word[y3],dx
+    ; mov dx,14
+    ; mov word[x1],dx
+    ; mov dx,20
+    ; mov word[y1],dx
+    ; mov dx,10
+    ; mov word[x2],dx
+    ; mov dx,60
+    ; mov word[y2],dx
+    ; mov dx,25
+    ; mov word[x3],dx
+    ; mov dx,69
+    ; mov word[y3],dx
 
-    ; mov rdi,print_d
-    ; mov rsi,[x1]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[x1]
+    mov rax,0
+    call printf
 
-    ; mov rdi,print_d
-    ; mov rsi,[y1]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[y1]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; mov rsi,[x2]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[x2]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; mov rsi,[y2]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[y2]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; mov rsi,[x3]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[x3]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; mov rsi,[y3]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[y3]
+    mov rax,0
+    call printf
 
     mov byte[genok],1
     jmp boucle
@@ -247,9 +258,9 @@ dessin:
     mov rdi,qword[display_name]
     mov rsi,qword[window]
     mov rdx,qword[gc]
-    mov ecx,dword[x1]	; coordonnée source en x
-    mov r8d,dword[y1]	; coordonnée source en y
-    mov r9d,dword[x2]	; coordonnée destination en x
+    mov cx,word[x1]	; coordonnée source en x
+    mov r8w,word[y1]	; coordonnée source en y
+    mov r9w,word[x2]	; coordonnée destination en x
     push qword[y2]		; coordonnée destination en y
     call XDrawLine
 
@@ -257,9 +268,9 @@ dessin:
     mov rdi,qword[display_name]
     mov rsi,qword[window]
     mov rdx,qword[gc]
-    mov ecx,dword[x1]	; coordonnée source en x
-    mov r8d,dword[y1]	; coordonnée source en y
-    mov r9d,dword[x3]	; coordonnée destination en x
+    mov cx,word[x1]	; coordonnée source en x
+    mov r8w,word[y1]	; coordonnée source en y
+    mov r9w,word[x3]	; coordonnée destination en x
     push qword[y3]		; coordonnée destination en y
     call XDrawLine
 
@@ -267,9 +278,9 @@ dessin:
     mov rdi,qword[display_name]
     mov rsi,qword[window]
     mov rdx,qword[gc]
-    mov ecx,dword[x3]	; coordonnée source en x
-    mov r8d,dword[y3]	; coordonnée source en y
-    mov r9d,dword[x2]	; coordonnée destination en x
+    mov cx,word[x3]	; coordonnée source en x
+    mov r8w,word[y3]	; coordonnée source en y
+    mov r9w,word[x2]	; coordonnée destination en x
     push qword[y2]		; coordonnée destination en y
     call XDrawLine
 
@@ -297,10 +308,10 @@ dessin:
     sub rbx,rcx         ; rbx = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
 
     mov [determinant],rbx
-    mov rdi,print_d
-    mov rsi,[determinant]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; mov rsi,[determinant]
+    ; mov rax,0
+    ; call printf
 
     cmp word[determinant],0
     mov dword[isDirect],0
@@ -314,7 +325,7 @@ dessin:
         dessin_y:
 
         ; mov rdi,pointx
-        ; movzx rsi,word[coord_x]
+        ; movzx rsi,word[]
         ; mov rax,0
         ; call printf
 
@@ -426,8 +437,8 @@ dessin:
             mov rdi,qword[display_name]
             mov rsi,qword[window]
             mov rdx,qword[gc]
-            mov ecx,[coord_x]	; coordonnée source en x
-            mov r8d,[coord_y]	; coordonnée source en y
+            mov cx,word[coord_x]	; coordonnée source en x
+            mov r8w,word[coord_y]	; coordonnée source en y
             call XDrawPoint
 
             jmp fin
@@ -439,13 +450,11 @@ dessin:
             jmp fin
 
         fin:
-        ; add word[coord_y],1 ; y++
-        inc word[coord_y] ; y++
+        inc word[coord_y]       ; y++
         cmp word[coord_y],400
         jle dessin_y
-        mov word[coord_y],0 ; reset de y
-        ; add word[coord_x],1 ; x++
-        inc word[coord_x] ; x++
+        mov word[coord_y],0     ; reset de y
+        inc word[coord_x]       ; x++
         cmp word[coord_x],400
         jle dessin_x
 
@@ -456,6 +465,8 @@ dessin:
     ; call printf
     
     dec byte[i]
+    ; cmp byte[i],0
+    ; jne boucle
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
@@ -484,8 +495,8 @@ coordonnees:
     rdrand ax
 
     ; utiliser modulo pour le ramener entre 0 et 400
-    mov bx, 400
-    xor dx, dx ; initialiser DX à 0
+    mov bx,100
+    xor dx,dx ; initialiser DX à 0
     div bx
     ; le résultat se trouve dans dx
 
