@@ -32,7 +32,7 @@ extern exit
 %define DWORD	            4
 %define WORD	            2
 %define BYTE	            1
-%define NB_TRIANGLE         3
+%define NB_TRIANGLE         1
 
 global main
 
@@ -50,6 +50,14 @@ section .data
 
 event:		times	24 dq 0
 
+coord_x:    dd  0
+coord_y:    dd  0
+result1:    dw  0
+result2:    dw  0
+result3:    dw  0
+pointx: db "x = %d",10,0
+pointy: db "y = %d",10,0
+
 x1:	dd	0
 x2:	dd	0
 x3:	dd	0
@@ -58,9 +66,10 @@ y2:	dd	0
 y3:	dd	0
 i:  db  0
 determinant:    dd	0
+isDirect:       dd	0
 print_d:        db "[ %d ]",0,10
-pos:            db "Determinant %d, triangle indirect !",10,0
-neg:            db "Determinant, triangle direct !",10,0
+inTriangle: db "Point dans le triangle !",10,0
+notInTriangle: db "Point pas dans le triangle #sad",10,0
 
 section .text
 	
@@ -118,12 +127,6 @@ call XSetForeground
 
 mov al, NB_TRIANGLE
 mov [i], al
-
-mov rdi,qword[display_name]
-mov rsi,event
-call XNextEvent
-
-cmp dword[event],ConfigureNotify	; à l'apparition de la fenêtre
 
 genTriangle:
     ; coordonnées des points du triangle
@@ -183,59 +186,7 @@ genTriangle:
     mov rax,0
     call printf
 
-    ; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
-    mov rdi,[x1]    ; x1
-    mov rsi,[y1]    ; y1
-    mov rdx,[x2]    ; x2
-    mov rcx,[y2]    ; y2
-    mov r8,[x3]     ; x3
-    mov r9,[y3]     ; y3
-    call calculDeterminant
-
-    mov [determinant],rax
-
-    ; mov rdi,print_d
-    ; mov rsi,[x1]
-    ; mov rax,0
-    ; call printf
-
-    ; mov rdi,print_d
-    ; mov rsi,[determinant]
-    ; mov rax,0
-    ; call printf
-
-    cmp word[determinant],0
-    jl negatif
-
-    cmp word[determinant],1
-    jge positif
-
-    positif:
-        mov rdi,pos
-        movsx rsi,word[determinant]
-        mov rax,0
-        call printf
-        jmp fin
-
-    negatif:
-        mov rdi,neg
-        movsx rsi,word[determinant]
-        mov rax,0
-        call printf
-        jmp fin
-       
-    fin:
-    ;     pop rbp
-    ;     mov rax,60
-    ;     mov rdi,0
-    ;     syscall
-    ; mov rdi,print_d
-    ; mov rsi,rcx
-    ; call printf
-
-
-
-    jmp dessin
+    ; jmp dessin
 
 boucle: ; boucle de gestion des évènements
     mov rdi,qword[display_name]
@@ -255,7 +206,7 @@ boucle: ; boucle de gestion des évènements
 dessin:
     ; couleurs sous forme RRGGBB où RR esr le niveau de rouge, GG le niveua de vert et BB le niveau de bleu
     ; 0000000 (noir) à FFFFFF (blanc)
-
+    
     ;couleur du triangle
     mov rdi,qword[display_name]
     mov rsi,qword[gc]
@@ -292,10 +243,148 @@ dessin:
     push qword[y2]		; coordonnée destination en y
     call XDrawLine
 
-    dec byte[i]
-    cmp byte[i], 0
-    jg genTriangle
-    jmp boucle
+
+    ; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
+    mov rdi,[x1]    ; x1
+    mov rsi,[y1]    ; y1
+    mov rdx,[x2]    ; x2
+    mov rcx,[y2]    ; y2
+    mov r8,[x3]     ; x3
+    mov r9,[y3]     ; y3
+    call calculDeterminant
+
+    mov [determinant],rax
+
+    ; mov rdi,print_d
+    ; mov rsi,[x1]
+    ; mov rax,0
+    ; call printf
+
+    ; mov rdi,print_d
+    ; mov rsi,[determinant]
+    ; mov rax,0
+    ; call printf
+
+    cmp word[determinant],0
+    jl negatif
+    mov ah,1
+    mov [isDirect],ah
+    ; cmp word[determinant],1
+
+    dessin_x:
+        dessin_y:
+
+        mov rdi,pointx
+        movzx rsi,word[coord_x]
+        mov rax,0
+        call printf
+
+        mov rdi,pointy
+        movzx rsi,word[coord_y]
+        mov rax,0
+        call printf
+
+        ;###################################
+        ;#  Code de dessin pour point ici  #
+        ;###################################
+        ; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
+        mov rdi,[x1]        ; x1
+        mov rsi,[y1]        ; y1
+        mov rdx,[x2]        ; x2
+        mov rcx,[y2]        ; y2
+        mov r8,[coord_x]    ; coord_x
+        mov r9,[coord_y]    ; coord_y
+        call calculDeterminant
+        mov [result1],rax
+
+        ; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
+        mov rdi,[x2]        ; x2
+        mov rsi,[y2]        ; y2
+        mov rdx,[coord_x]   ; coord_x
+        mov rcx,[coord_y]   ; coord_y
+        mov r8,[x3]         ; x3
+        mov r9,[y3]         ; y3
+        call calculDeterminant
+        mov [result2],rax
+
+        ; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
+        mov rdi,[x3]        ; x3
+        mov rsi,[y3]        ; y3
+        mov rdx,[coord_x]   ; coord_x
+        mov rcx,[coord_y]   ; coord_y
+        mov r8,[x1]         ; x1
+        mov r9,[y1]         ; y1
+        call calculDeterminant
+        mov [result3],rax
+        
+        cmp isDirect,0
+        je positif
+        jmp negatif
+
+        positif:
+            cmp word[result1],0
+            jl point_pasdessin
+
+            cmp word[result1],1
+            jge pos_valide2
+
+            pos_valide2:
+                cmp word[result2],0
+                jl point_pasdessin
+                cmp word[result2],1
+                jge pos_valide3
+
+            pos_valide3:
+                cmp word[result3],0
+                jl point_pasdessin
+                cmp word[result3],1
+                jge point_dessin
+
+        negatif:
+            cmp word[result1],0
+            jl point_pasdessin
+
+            cmp word[result1],1
+            jge neg_valide2
+
+            neg_valide2:
+                cmp word[result2],0
+                jl point_pasdessin
+                cmp word[result2],1
+                jge neg_valide3
+
+            neg_valide3:
+                cmp word[result3],0
+                jl point_pasdessin
+                cmp word[result3],1
+                jge point_dessin
+
+        point_dessin:
+            mov rdi,inTriangle
+            mov rax,0
+            call printf
+            jmp fin
+
+        point_pasdessin:
+            mov rdi,notInTriangle
+            mov rax,0
+            call printf
+            jmp fin
+
+        add word[coord_y],1 ; y++
+        cmp word[coord_y],10
+        jle dessin_y
+        mov word[coord_y],0 ; reset de y
+        add word[coord_x],1 ; x++
+        cmp word[coord_x],10
+        jle dessin_x
+
+    fin:
+
+    ; dec byte[i]
+    ; cmp byte[i], 0
+    ; jg genTriangle
+    ; jmp boucle
 
 
 ; ############################
