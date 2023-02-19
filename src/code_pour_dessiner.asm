@@ -32,7 +32,7 @@ extern exit
 %define DWORD	            4
 %define WORD	            2
 %define BYTE	            1
-%define NB_TRIANGLE         1
+%define NB_TRIANGLE         3
 
 global main
 
@@ -56,10 +56,11 @@ x3:	dd	0
 y1:	dd	0
 y2:	dd	0
 y3:	dd	0
+i:  db  0
 determinant:    dd	0
 print_d:        db "[ %d ]",0,10
-pos:            db "Determinant = %d, triangle indirect !",10,0
-neg:            db "Determinant = %d, triangle direct !",10,0
+pos:            db "Determinant %d, triangle indirect !",10,0
+neg:            db "Determinant, triangle direct !",10,0
 
 section .text
 	
@@ -115,144 +116,186 @@ mov rsi,qword[gc]
 mov rdx,0x000000	; Couleur du crayon
 call XSetForeground
 
-; coordonnées des points du triangle
-call coordonnees
-mov word[x1],dx
-call coordonnees
-mov word[y1],dx
-call coordonnees
-mov word[x2],dx
-call coordonnees
-mov word[y2],dx
-call coordonnees
-mov word[x3],dx
-call coordonnees
-mov word[y3],dx
+mov al, NB_TRIANGLE
+mov [i], al
 
-; mov dx,14
-; mov word[x1],dx
-; mov dx,20
-; mov word[y1],dx
-; mov dx,25
-; mov word[x2],dx
-; mov dx,69
-; mov word[y2],dx
-; mov dx,10
-; mov word[x3],dx
-; mov dx,60
-; mov word[y3],dx
-
-mov rdi,print_d
-mov rsi,[x1]
-call printf
-mov rdi,print_d
-mov rsi,[y1]
-call printf
-mov rdi,print_d
-mov rsi,[x2]
-call printf
-mov rdi,print_d
-mov rsi,[y2]
-call printf
-mov rdi,print_d
-mov rsi,[x3]
-call printf
-mov rdi,print_d
-mov rsi,[y3]
-call printf
-
-; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
-mov rdi,[x1]    ; x1
-mov rsi,[y1]    ; y1
-mov rdx,[x2]    ; x2
-mov rcx,[y2]    ; y2
-mov r8,[x3]     ; x3
-mov r9,[y3]     ; y3
-call calculDeterminant
-
-mov [determinant],rax
-
-cmp word[determinant],0
-jl negatif
-
-cmp word[determinant],1
-jge positif
-
-positif:
-    mov rdi,pos
-    movsx rsi,word[determinant]
-    mov rax,0
-    call printf
-    jmp fin
-
-negatif:
-    mov rdi,neg
-    movsx rsi,word[determinant]
-    mov rax,0
-    call printf
-    jmp fin
-
-fin:
-    pop rbp
-    mov rax,60
-    mov rdi,0
-    syscall
-
-boucle: ; boucle de gestion des évènements
 mov rdi,qword[display_name]
 mov rsi,event
 call XNextEvent
 
 cmp dword[event],ConfigureNotify	; à l'apparition de la fenêtre
-je dessin							; on saute au label 'dessin'
 
-cmp dword[event],KeyPress			; Si on appuie sur une touche
-je closeDisplay						; on saute au label 'closeDisplay' qui ferme la fenêtre
-jmp boucle
+genTriangle:
+    ; coordonnées des points du triangle
+    call coordonnees
+    mov word[x1],dx
+    call coordonnees
+    mov word[y1],dx
+    call coordonnees
+    mov word[x2],dx
+    call coordonnees
+    mov word[y2],dx
+    call coordonnees
+    mov word[x3],dx
+    call coordonnees
+    mov word[y3],dx
+
+    ; mov dx,14
+    ; mov word[x1],dx
+    ; mov dx,20
+    ; mov word[y1],dx
+    ; mov dx,25
+    ; mov word[x2],dx
+    ; mov dx,69
+    ; mov word[y2],dx
+    ; mov dx,10
+    ; mov word[x3],dx
+    ; mov dx,60
+    ; mov word[y3],dx
+
+    mov rdi,print_d
+    mov rsi,[x1]
+    mov rax,0
+    call printf
+
+    mov rdi,print_d
+    mov rsi,[y1]
+    mov rax,0
+    call printf
+    
+    mov rdi,print_d
+    mov rsi,[x2]
+    mov rax,0
+    call printf
+    
+    mov rdi,print_d
+    mov rsi,[y2]
+    mov rax,0
+    call printf
+    
+    mov rdi,print_d
+    mov rsi,[x3]
+    mov rax,0
+    call printf
+    
+    mov rdi,print_d
+    mov rsi,[y3]
+    mov rax,0
+    call printf
+
+    ; appel de la fonction calculDeterminant avec les arguments x1, y1, x2, y2, x3, y3
+    mov rdi,[x1]    ; x1
+    mov rsi,[y1]    ; y1
+    mov rdx,[x2]    ; x2
+    mov rcx,[y2]    ; y2
+    mov r8,[x3]     ; x3
+    mov r9,[y3]     ; y3
+    call calculDeterminant
+
+    mov [determinant],rax
+
+    ; mov rdi,print_d
+    ; mov rsi,[x1]
+    ; mov rax,0
+    ; call printf
+
+    ; mov rdi,print_d
+    ; mov rsi,[determinant]
+    ; mov rax,0
+    ; call printf
+
+    cmp word[determinant],0
+    jl negatif
+
+    cmp word[determinant],1
+    jge positif
+
+    positif:
+        mov rdi,pos
+        movsx rsi,word[determinant]
+        mov rax,0
+        call printf
+        jmp fin
+
+    negatif:
+        mov rdi,neg
+        movsx rsi,word[determinant]
+        mov rax,0
+        call printf
+        jmp fin
+       
+    fin:
+    ;     pop rbp
+    ;     mov rax,60
+    ;     mov rdi,0
+    ;     syscall
+    ; mov rdi,print_d
+    ; mov rsi,rcx
+    ; call printf
+
+
+
+    jmp dessin
+
+boucle: ; boucle de gestion des évènements
+    mov rdi,qword[display_name]
+    mov rsi,event
+    call XNextEvent
+
+    cmp dword[event],ConfigureNotify	; à l'apparition de la fenêtre
+    je dessin						    ; on saute au label 'dessin'
+
+    cmp dword[event],KeyPress			; Si on appuie sur une touche
+    je closeDisplay						; on saute au label 'closeDisplay' qui ferme la fenêtre
+    jmp boucle
 
 ;#########################################
 ;#		DEBUT DE LA ZONE DE DESSIN		 #
 ;#########################################
 dessin:
-; couleurs sous forme RRGGBB où RR esr le niveau de rouge, GG le niveua de vert et BB le niveau de bleu
-; 0000000 (noir) à FFFFFF (blanc)
+    ; couleurs sous forme RRGGBB où RR esr le niveau de rouge, GG le niveua de vert et BB le niveau de bleu
+    ; 0000000 (noir) à FFFFFF (blanc)
 
-;couleur du triangle
-mov rdi,qword[display_name]
-mov rsi,qword[gc]
-mov edx,0x000000	; Couleur du crayon ; noir
-call XSetForeground
+    ;couleur du triangle
+    mov rdi,qword[display_name]
+    mov rsi,qword[gc]
+    mov edx,0x000000	; Couleur du crayon ; noir
+    call XSetForeground
 
-; dessin de la ligne 1
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,dword[x1]	; coordonnée source en x
-mov r8d,dword[y1]	; coordonnée source en y
-mov r9d,dword[x2]	; coordonnée destination en x
-push qword[y2]		; coordonnée destination en y
-call XDrawLine
+    ; dessin de la ligne 1
+    mov rdi,qword[display_name]
+    mov rsi,qword[window]
+    mov rdx,qword[gc]
+    mov ecx,dword[x1]	; coordonnée source en x
+    mov r8d,dword[y1]	; coordonnée source en y
+    mov r9d,dword[x2]	; coordonnée destination en x
+    push qword[y2]		; coordonnée destination en y
+    call XDrawLine
 
-; dessin de la ligne 2
-; mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,dword[x1]	; coordonnée source en x
-mov r8d,dword[y1]	; coordonnée source en y
-mov r9d,dword[x3]	; coordonnée destination en x
-push qword[y3]		; coordonnée destination en y
-call XDrawLine
+    ; dessin de la ligne 2
+    mov rdi,qword[display_name]
+    mov rsi,qword[window]
+    mov rdx,qword[gc]
+    mov ecx,dword[x1]	; coordonnée source en x
+    mov r8d,dword[y1]	; coordonnée source en y
+    mov r9d,dword[x3]	; coordonnée destination en x
+    push qword[y3]		; coordonnée destination en y
+    call XDrawLine
 
-; dessin de la ligne 2
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,dword[x3]	; coordonnée source en x
-mov r8d,dword[y3]	; coordonnée source en y
-mov r9d,dword[x2]	; coordonnée destination en x
-push qword[y2]		; coordonnée destination en y
-call XDrawLine
+    ; dessin de la ligne 2
+    mov rdi,qword[display_name]
+    mov rsi,qword[window]
+    mov rdx,qword[gc]
+    mov ecx,dword[x3]	; coordonnée source en x
+    mov r8d,dword[y3]	; coordonnée source en y
+    mov r9d,dword[x2]	; coordonnée destination en x
+    push qword[y2]		; coordonnée destination en y
+    call XDrawLine
 
+    dec byte[i]
+    cmp byte[i], 0
+    jg genTriangle
+    jmp boucle
 
 
 ; ############################
@@ -261,11 +304,11 @@ call XDrawLine
 jmp flush
 
 flush:
-mov rdi,qword[display_name]
-call XFlush
-jmp boucle
-mov rax,34
-syscall
+    mov rdi,qword[display_name]
+    call XFlush
+    jmp boucle
+    mov rax,34
+    syscall
 
 closeDisplay:
     mov     rax,qword[display_name]
@@ -327,7 +370,7 @@ calculDeterminant:
 
     sub rbx, rdi        ; rbx = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
 
-    mov rax, rbx
+    ; mov rax, rbx
 
     ; mov rdi,print_d
     ; mov rsi,rax
@@ -335,5 +378,6 @@ calculDeterminant:
     ; call printf
 
     pop rbx
+    mov rsp,rbp
     pop rbp
     ret
