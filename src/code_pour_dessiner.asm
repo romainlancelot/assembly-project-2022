@@ -13,7 +13,7 @@ extern XDrawLine
 extern XDrawPoint
 extern XFillArc
 extern XNextEvent
-extern XFillPolygon
+; extern XFillPolygon
 
 ; external functions from stdio library (ld-linux-x86-64.so.2)    
 extern printf
@@ -68,8 +68,8 @@ result1:        dw  0
 result2:        dw  0
 result3:        dw  0
 
-print_d:        db "[ %d ]",0,10
-print_i:        db "i : [ %d ] /",0,10
+print_d:        db "[ %d ]",10,0
+print_i:        db "i : [ %d ] /",10,0
 ; inTriangle:     db "Point dans le triangle !",10,0
 ; notInTriangle:  db "Point pas dans le triangle #sad",10,0
 ; pointx: db "x = %d",10,0
