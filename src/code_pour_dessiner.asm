@@ -495,7 +495,7 @@ coordonnees:
     rdrand ax
 
     ; utiliser modulo pour le ramener entre 0 et 400
-    mov bx,100
+    mov bx,400
     xor dx,dx ; initialiser DX à 0
     div bx
     ; le résultat se trouve dans dx
