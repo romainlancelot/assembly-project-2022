@@ -33,7 +33,7 @@ extern exit
 %define DWORD	            4
 %define WORD	            2
 %define BYTE	            1
-%define NB_TRIANGLE         2
+%define NB_TRIANGLE         1
 
 global main
 
