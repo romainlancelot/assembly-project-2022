@@ -33,7 +33,7 @@ extern exit
 %define DWORD	            4
 %define WORD	            2
 %define BYTE	            1
-%define NB_TRIANGLE         3
+%define NB_TRIANGLE         1
 
 global main
 
@@ -203,35 +203,35 @@ genTriangle:
     ; mov dx,69
     ; mov word[y3],dx
 
-    ; mov rdi,print_d
-    ; movzx rsi,word[x1]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[x1]
+    mov rax,0
+    call printf
 
-    ; mov rdi,print_d
-    ; movzx rsi,word[y1]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[y1]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; movzx rsi,word[x2]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[x2]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; movzx rsi,word[y2]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[y2]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; movzx rsi,word[x3]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[x3]
+    mov rax,0
+    call printf
     
-    ; mov rdi,print_d
-    ; movzx rsi,word[y3]
-    ; mov rax,0
-    ; call printf
+    mov rdi,print_d
+    movzx rsi,word[y3]
+    mov rax,0
+    call printf
 
     ; mov byte[genok],1
     ; jmp boucle
@@ -334,7 +334,6 @@ dessin:
     xor edx,edx
     div ebx
     mov dword[color],edx
-
 
     dessin_x:
         dessin_y:
@@ -508,6 +507,11 @@ coordonnees:
     ; tirer un nombre au hasard rdrand
     mov ax,0
     rdrand ax
+    ; La valeur générée par RDRAND n’est valide que si le flag CF du registre d’état est égal à 1 après l’appel à l’instruction. Il est donc nécessaire de la relancer si CF=0.
+    mov bx,ax
+    shr bx,15
+    cmp bx,0
+    jne coordonnees
 
     ; utiliser modulo pour le ramener entre 0 et 400
     mov bx,400
