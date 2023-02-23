@@ -68,11 +68,11 @@ result1:        dw  0
 result2:        dw  0
 result3:        dw  0
 
-print_d:        db "[ %d ]",10,0
-print_i:        db "i : [ %d ] /",10,0
-print_direct:     db "triangle direct",10,0
-print_indirect:     db "triangle indirect",10,0
-print_determinant:     db "determinant : %d",10,0
+print_d:                db "[ %d ]",10,0
+print_i:                db "i : [ %d ] /",10,0
+print_direct:           db "triangle direct",10,0
+print_indirect:         db "triangle indirect",10,0
+print_determinant:      db "determinant : %d",10,0
 ; inTriangle:     db "Point dans le triangle !",10,0
 ; notInTriangle:  db "Point pas dans le triangle #sad",10,0
 ; pointx: db "x = %d",10,0
@@ -91,9 +91,9 @@ mov     qword[display_name],rax	; rax=nom du display
 
 ; display_name structure
 ; screen = DefaultScreen(display_name);
-mov     rax,qword[display_name]
-mov     eax,dword[rax+0xe0]
-mov     dword[screen],eax
+mov rax,qword[display_name]
+mov eax,dword[rax+0xe0]
+mov dword[screen],eax
 
 mov rdi,qword[display_name]
 mov esi,dword[screen]
@@ -203,35 +203,35 @@ genTriangle:
     ; mov dx,69
     ; mov word[y3],dx
 
-    mov rdi,print_d
-    movzx rsi,word[x1]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; movzx rsi,word[x1]
+    ; mov rax,0
+    ; call printf
 
-    mov rdi,print_d
-    movzx rsi,word[y1]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; movzx rsi,word[y1]
+    ; mov rax,0
+    ; call printf
     
-    mov rdi,print_d
-    movzx rsi,word[x2]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; movzx rsi,word[x2]
+    ; mov rax,0
+    ; call printf
     
-    mov rdi,print_d
-    movzx rsi,word[y2]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; movzx rsi,word[y2]
+    ; mov rax,0
+    ; call printf
     
-    mov rdi,print_d
-    movzx rsi,word[x3]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; movzx rsi,word[x3]
+    ; mov rax,0
+    ; call printf
     
-    mov rdi,print_d
-    movzx rsi,word[y3]
-    mov rax,0
-    call printf
+    ; mov rdi,print_d
+    ; movzx rsi,word[y3]
+    ; mov rax,0
+    ; call printf
 
     ; mov byte[genok],1
     ; jmp boucle
@@ -445,7 +445,7 @@ dessin:
             ;couleur du point 1
             mov rdi,qword[display_name]
             mov rsi,qword[gc]
-            mov edx,dword[color]	; Couleur du crayon ; rouge
+            mov edx,dword[color]	; Couleur du crayon ; couleur aléatoire
             call XSetForeground
 
             ; Dessin d'un point rouge : coordonnées (100,200)
