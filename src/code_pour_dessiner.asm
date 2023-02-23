@@ -72,6 +72,7 @@ print_d:        db "[ %d ]",10,0
 print_i:        db "i : [ %d ] /",10,0
 print_direct:     db "triangle direct",10,0
 print_indirect:     db "triangle indirect",10,0
+print_determinant:     db "determinant : %d",10,0
 ; inTriangle:     db "Point dans le triangle !",10,0
 ; notInTriangle:  db "Point pas dans le triangle #sad",10,0
 ; pointx: db "x = %d",10,0
@@ -131,12 +132,6 @@ mov rsi,qword[gc]
 mov rdx,0x000000	; Couleur du crayon
 call XSetForeground
 
-rdrand eax
-mov ebx,MaxColor
-xor edx,edx
-div ebx
-mov dword[color],edx
-
 ; jmp genTriangle
 
 boucle: ; boucle de gestion des évènements
@@ -159,7 +154,7 @@ boucle: ; boucle de gestion des évènements
     ; mov byte[genok],0
 
     cmp dword[event],ConfigureNotify	; à l'apparition de la fenêtre
-    je genTriangle 						    ; on saute au label 'dessin'
+    je genTriangle 						; on saute au label 'genTriangle'
     
     ; skip:
     cmp dword[event],KeyPress			; Si on appuie sur une touche
@@ -309,10 +304,11 @@ dessin:
     sub rbx,rcx         ; rbx = (x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2)
 
     mov [determinant],rbx
-    ; mov rdi,print_d
-    ; mov rsi,[determinant]
-    ; mov rax,0
-    ; call printf
+
+    mov rdi,print_determinant
+    mov rsi,[determinant]
+    mov rax,0
+    call printf
 
     cmp word[determinant],0
     mov byte[isDirect],0
@@ -327,6 +323,18 @@ dessin:
     mov rdi,print_indirect
     mov rax,0
     call printf
+
+    mov r14d,0
+    mov word[coord_x],0
+    mov r14d,0
+    mov word[coord_y],0
+
+    rdrand eax
+    mov ebx,MaxColor
+    xor edx,edx
+    div ebx
+    mov dword[color],edx
+
 
     dessin_x:
         dessin_y:
@@ -433,7 +441,7 @@ dessin:
             ; mov rdi,inTriangle
             ; mov rax,0
             ; call printf
-            
+
             ;couleur du point 1
             mov rdi,qword[display_name]
             mov rsi,qword[gc]
