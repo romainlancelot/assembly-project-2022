@@ -33,7 +33,7 @@ extern exit
 %define DWORD	            4
 %define WORD	            2
 %define BYTE	            1
-%define NB_TRIANGLE         1
+%define NB_TRIANGLE         3
 
 global main
 
@@ -70,6 +70,8 @@ result3:        dw  0
 
 print_d:        db "[ %d ]",10,0
 print_i:        db "i : [ %d ] /",10,0
+print_direct:     db "triangle direct",10,0
+print_indirect:     db "triangle indirect",10,0
 ; inTriangle:     db "Point dans le triangle !",10,0
 ; notInTriangle:  db "Point pas dans le triangle #sad",10,0
 ; pointx: db "x = %d",10,0
@@ -135,12 +137,12 @@ xor edx,edx
 div ebx
 mov dword[color],edx
 
-mov bl, NB_TRIANGLE
-mov byte[i],bl
-
-jmp genTriangle
+; jmp genTriangle
 
 boucle: ; boucle de gestion des évènements
+    mov bl, NB_TRIANGLE
+    mov byte[i],bl
+
     mov rdi,qword[display_name]
     mov rsi,event
     call XNextEvent
@@ -149,17 +151,17 @@ boucle: ; boucle de gestion des évènements
     ; mov rsi,[i]
     ; mov rax,0
     ; call printf
-    cmp byte[i],0
-    je skip
+    ; cmp byte[i],0
+    ; je skip
     
-    cmp byte[genok],0
-    je genTriangle
-    mov byte[genok],0
+    ; cmp byte[genok],0
+    ; je genTriangle
+    ; mov byte[genok],0
 
     cmp dword[event],ConfigureNotify	; à l'apparition de la fenêtre
-    je dessin 						    ; on saute au label 'dessin'
+    je genTriangle 						    ; on saute au label 'dessin'
     
-    skip:
+    ; skip:
     cmp dword[event],KeyPress			; Si on appuie sur une touche
     je closeDisplay						; on saute au label 'closeDisplay' qui ferme la fenêtre
     jmp boucle
@@ -167,7 +169,6 @@ boucle: ; boucle de gestion des évènements
 
 genTriangle:
     ; coordonnées des points du triangle
-    mov dx,0
     call coordonnees
     mov word[x1],dx
     call coordonnees
@@ -237,8 +238,8 @@ genTriangle:
     mov rax,0
     call printf
 
-    mov byte[genok],1
-    jmp boucle
+    ; mov byte[genok],1
+    ; jmp boucle
 
 
 ;#########################################
@@ -314,12 +315,18 @@ dessin:
     ; call printf
 
     cmp word[determinant],0
-    mov dword[isDirect],0
+    mov byte[isDirect],0
     jl initIsDirect
     jg skipIsDirect
     initIsDirect:
         mov byte[isDirect],1
+        mov rdi,print_direct
+        mov rax,0
+        call printf
     skipIsDirect:
+    mov rdi,print_indirect
+    mov rax,0
+    call printf
 
     dessin_x:
         dessin_y:
@@ -465,8 +472,8 @@ dessin:
     ; call printf
     
     dec byte[i]
-    ; cmp byte[i],0
-    ; jne boucle
+    cmp byte[i],0
+    jne genTriangle
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
@@ -476,7 +483,7 @@ jmp flush
 flush:
     mov rdi,qword[display_name]
     call XFlush
-    jmp boucle
+    ; jmp boucle
     mov rax,34
     syscall
 
